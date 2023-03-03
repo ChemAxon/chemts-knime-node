@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: ChemTS-Node extension for KNIME Workbench
+Bundle-SymbolicName: com.chemaxon.chemts.knime; singleton:=true
+Bundle-Version: 1.0.0
+Bundle-ClassPath: chemts.jar
+Bundle-Activator: com.chemaxon.chemts.knime.ChemTSNodePlugin
+Bundle-Vendor: Chemaxon Ltd.
+Require-Bundle: org.eclipse.core.runtime,
+ org.knime.workbench.core,
+ org.knime.workbench.repository,
+ org.knime.base,
+ com.fasterxml.jackson.core.jackson-databind;bundle-version="2.13.2",
+ com.fasterxml.jackson.core.jackson-core;bundle-version="2.13.2",
+ com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.13.2",
+ com.google.guava;bundle-version="19.0.0"
+Bundle-ActivationPolicy: lazy
+Export-Package: com.chemaxon.chemts.knime
+

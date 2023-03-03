@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<knimeNode icon="./logo.png" type="Other" xmlns="http://knime.org/node/v2.8" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://knime.org/node/v2.10 http://knime.org/node/v2.10.xsd">
+    <name>ChemTS</name>
+    
+    <shortDescription>
+        
+    </shortDescription>
+    
+    <fullDescription>
+        <intro>This node returns HS numbers and related data to all chemical structures provided in a given column of the input DataTable by invoking ChemTS' integration endpoints.<br/>
+        Source code is available <a href="https://github.com/ChemAxon/chemts-knime-node">here</a>.
+        </intro>
+        <tab name="Options">
+            <option name="Structure column">The column of the input DataTable that holds the structures to get the HS information for.</option>
+            <option name="Countries">HS information will be returned for the selected countries. No selection means, running for all countries.</option>
+            <option name="Structure format">The format of the input structures. If no format is specified ChemTS will try to recognize the format.</option>
+        </tab>
+        <tab name="Connection settings">
+            <option name="Authentication type">The type of authentication ChemTS integration endpoints use</option>
+            <option name="ChemTS host">The host machine for ChemTS cc-api service. (e.g: http://&lt;host&gt;:&lt;port&gt;)</option>
+            <option name="Timeout">Sets read and connection timeout for invoking ChemTS' endpoints.</option>
+            <option name="Token endpoint">The token endpoint used to retrieve access token. Should be set if 'OAuth2' authentication type is selected.</option>
+            <option name="Client id">Client id used to retrieve the access token. Should be set if 'OAuth2' authentication type is selected.</option>
+            <option name="Client secret">Client secret used to retrieve the access token. Should be set if 'OAuth2' authentication type is selected.</option>
+            <option name="Username">Name of the user to authenticate against on the service calls. Should be set if 'Basic' authentication type is selected.</option>
+            <option name="Password">Password to authenticate against on the service calls. Should be set if 'Basic' authentication type is selected.</option>
+        </tab>
+    </fullDescription>
+
+    <ports>
+        <inPort index="0" name="Input data">DataTable containing the input structures that will be checked</inPort>
+        <!-- possibly more input ports here-->
+        <outPort index="0" name="Result">Records with ChemTS data</outPort>
+        <outPort index="1" name="Error">Records that could not be checked due to error</outPort>
+        <!-- possibly more output ports here-->
+    </ports>
+</knimeNode>
