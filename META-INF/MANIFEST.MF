@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: ChemTS-Node extension for KNIME Workbench
+Bundle-Name: cHemTS-Node extension for KNIME Workbench
 Bundle-SymbolicName: com.chemaxon.chemts.knime; singleton:=true
 Bundle-Version: 1.0.0
 Bundle-ClassPath: chemts.jar

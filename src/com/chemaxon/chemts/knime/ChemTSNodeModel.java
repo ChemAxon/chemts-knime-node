@@ -119,7 +119,7 @@ public class ChemTSNodeModel extends NodeModel {
                         if (htsDatas.isEmpty()) {
                             List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
                             dataCells.add(new StringCell(countryCode));
-                            dataCells.add(new StringCell("No ChemTS data found."));
+                            dataCells.add(new StringCell("No cHemTS data found."));
                             DataRow row = new DefaultRow(new RowKey("Row" + errorDataContainer.size()), dataCells);
                             errorDataContainer.addRowToTable(row);
                         }
@@ -197,7 +197,7 @@ public class ChemTSNodeModel extends NodeModel {
     private void validateConnectionDetails() throws InvalidSettingsException {
 
         if (connectionFields.getHost().isEmpty()) {
-            throw new InvalidSettingsException("ChemTS host is not specified.");
+            throw new InvalidSettingsException("cHemTS host is not specified.");
         }
         if (connectionFields.getAuthType().equals(ConnectionSettingsTabFields.AUTH_OAUTH2)
                 && connectionFields.getTokenUrl().isEmpty()) {
@@ -208,7 +208,7 @@ public class ChemTSNodeModel extends NodeModel {
             // validate connection settings by invoking a service
             new ChemTSSystemInfoInvoker(connectionFields).getSystemInfo();
         } catch (Exception e) {
-            setWarningMessage("Failed to connect to ChemTS. "
+            setWarningMessage("Failed to connect to cHemTS. "
                     + "Please check if connection settings are correct.");
         }
     }

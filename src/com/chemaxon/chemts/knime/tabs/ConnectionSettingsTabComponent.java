@@ -85,7 +85,7 @@ public class ConnectionSettingsTabComponent implements RestConnectionDetails {
         pane.addDialogComponent(new DialogComponentButtonGroup(m_authType, false, "Authentication type:", AUTH_OAUTH2, AUTH_BASIC, AUTH_ANONYMOUS));
 
         pane.createNewGroup("Settings");
-        pane.addDialogComponent(new DialogComponentString(m_host, "ChemTS host:", true, 30));
+        pane.addDialogComponent(new DialogComponentString(m_host, "cHemTS host:", true, 30));
         pane.addDialogComponent(new DialogComponentNumber(m_timeout, "Timeout:", 1000, 5));
 
         pane.createNewGroup("OAuth2 authentication settings");

@@ -108,7 +108,7 @@ public class OptionsTabComponent {
                 initCountrySelectionComponent();
                 errorMsgLabel.setText("");
             } catch (Exception e) {
-                errorMsgLabel.setText("<html>Failed to connect to ChemTS."
+                errorMsgLabel.setText("<html>Failed to connect to cHemTS."
                         + "<br>Please make sure connection settings are correct.<html>");
             }
         }
