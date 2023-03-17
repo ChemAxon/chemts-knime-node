@@ -24,7 +24,9 @@ import static java.util.stream.Collectors.toList;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketTimeoutException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.knime.core.data.DataCell;
 import org.knime.core.data.DataColumnSpec;
@@ -40,6 +42,7 @@ import org.knime.core.node.CanceledExecutionException;
 import org.knime.core.node.ExecutionContext;
 import org.knime.core.node.ExecutionMonitor;
 import org.knime.core.node.InvalidSettingsException;
+import org.knime.core.node.NodeLogger;
 import org.knime.core.node.NodeModel;
 import org.knime.core.node.NodeSettingsRO;
 import org.knime.core.node.NodeSettingsWO;
@@ -56,6 +59,8 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
 public class ChemTSNodeModel extends NodeModel {
+
+    private static final NodeLogger logger = NodeLogger.getLogger(ChemTSNodeModel.class);
 
     private static final int DATA_CHUNK_SIZE = 10;
 
@@ -107,48 +112,66 @@ public class ChemTSNodeModel extends NodeModel {
             checkListRequest.setCountryCodes(countryCodes);
             checkListRequest.setMolFormat(optionFields.getMolFormat());
 
-            List<CheckListResults> results = checkListInvoker.check(checkListRequest).getResults();
+            try {
+                List<CheckListResults> results = checkListInvoker.check(checkListRequest).getResults();
 
-            int inputIndex = 0;
+                int inputIndex = 0;
 
-            for (CheckListResults result : results) {
-                for (String countryCode : countryCodes) {
-                    if (Strings.isNullOrEmpty(result.getErrorMessage())) {
-                        List<HtsData> htsDatas = result.getHtsData().stream()
-                                .filter(htsData -> htsData.getCountryCode().equals(countryCode)).collect(toList());
-                        if (htsDatas.isEmpty()) {
+                for (CheckListResults result : results) {
+                    for (String countryCode : countryCodes) {
+                        if (Strings.isNullOrEmpty(result.getErrorMessage())) {
+                            List<HtsData> htsDatas = result.getHtsData().stream()
+                                    .filter(htsData -> htsData.getCountryCode().equals(countryCode)).collect(toList());
+                            if (htsDatas.isEmpty()) {
+                                List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
+                                dataCells.add(new StringCell(countryCode));
+                                dataCells.add(new StringCell("No cHemTS data found."));
+                                DataRow row = new DefaultRow(new RowKey("Row" + errorDataContainer.size()), dataCells);
+                                errorDataContainer.addRowToTable(row);
+                            }
+                            for (HtsData htsData : htsDatas) {
+                                List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
+                                dataCells.add(new StringCell(countryCode));
+                                dataCells.add(new StringCell(htsData.getHtsNumber()));
+                                dataCells.add(new StringCell(htsData.getFullDescription()));
+                                dataCells.add(new StringCell(String.join(", ", htsData.getUnits())));
+                                dataCells.add(new StringCell(htsData.getGeneral() == null ? "" : htsData.getGeneral()));
+                                dataCells.add(new StringCell(htsData.getSpecial() == null ? "" : htsData.getSpecial()));
+                                dataCells.add(new StringCell(
+                                        htsData.getQuotaQuantity() == null ? "" : htsData.getQuotaQuantity()));
+                                dataCells.add(new StringCell(htsData.getOther() == null ? "" : htsData.getOther()));
+                                dataCells.add(new StringCell(result.getPharmaAgreement().get(countryCode)));
+                                dataCells.add(new StringCell(result.getDrugInfo().get(countryCode)));
+                                DataRow row = new DefaultRow(new RowKey("Row" + resultDataContainer.size()), dataCells);
+                                resultDataContainer.addRowToTable(row);
+                            }
+                        } else {
                             List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
                             dataCells.add(new StringCell(countryCode));
-                            dataCells.add(new StringCell("No cHemTS data found."));
+                            dataCells.add(new StringCell(result.getErrorMessage()));
                             DataRow row = new DefaultRow(new RowKey("Row" + errorDataContainer.size()), dataCells);
                             errorDataContainer.addRowToTable(row);
                         }
-                        for (HtsData htsData : htsDatas) {
-                            List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
-                            dataCells.add(new StringCell(countryCode));
-                            dataCells.add(new StringCell(htsData.getHtsNumber()));
-                            dataCells.add(new StringCell(htsData.getFullDescription()));
-                            dataCells.add(new StringCell(String.join(", ", htsData.getUnits())));
-                            dataCells.add(new StringCell(htsData.getGeneral() == null ? "" : htsData.getGeneral()));
-                            dataCells.add(new StringCell(htsData.getSpecial() == null ? "" : htsData.getSpecial()));
-                            dataCells.add(new StringCell(htsData.getQuotaQuantity() == null ? "" : htsData.getQuotaQuantity()));
-                            dataCells.add(new StringCell(htsData.getOther() == null ? "" : htsData.getOther()));
-                            dataCells.add(new StringCell(result.getPharmaAgreement().get(countryCode)));
-                            dataCells.add(new StringCell(result.getDrugInfo().get(countryCode)));
-                            DataRow row = new DefaultRow(new RowKey("Row" + resultDataContainer.size()), dataCells);
-                            resultDataContainer.addRowToTable(row);
-                        }
-                    } else {
-                        List<DataCell> dataCells = inputDataRows.get(inputIndex).stream().collect(toList());
+                    }
+                    inputIndex++;
+                }
+            } catch (Exception e) {
+                for (DataRow inputRow : inputDataRows) {
+                    for (String countryCode : countryCodes) {
+                        RowKey key = new RowKey("Row" + errorDataContainer.size());
+                        List<DataCell> dataCells = inputRow.stream().collect(Collectors.toList());
                         dataCells.add(new StringCell(countryCode));
-                        dataCells.add(new StringCell(result.getErrorMessage()));
-                        DataRow row = new DefaultRow(new RowKey("Row" + errorDataContainer.size()), dataCells);
-                        errorDataContainer.addRowToTable(row);
+                        if (e.getCause() instanceof SocketTimeoutException) {
+                            dataCells.add(new StringCell(e.getCause().getMessage()));
+                        } else {
+                            dataCells.add(new StringCell(e.getMessage()));
+                        }
+                        DataRow outputRow = new DefaultRow(key, dataCells.toArray(new DataCell[0]));
+                        errorDataContainer.addRowToTable(outputRow);
                     }
                 }
-                inputIndex++;
+                logger.error("Error during service call.", e);
             }
-
             // check if the execution monitor was canceled
             exec.checkCanceled();
 
